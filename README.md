@@ -1,57 +1,23 @@
-# rbenv-homebrew-openssl
+# DEPRECATION NOTICE
 
-This rbenv plugin hooks into the `rbenv install` command to automatically set
-the appropriate configuration flags to build against OpenSSL from Homebrew (if
-both are installed).
+Note: This plugin is no longer necessary. rbenv already uses openssl from
+Homebrew _if_ it considers your openssl version ["broken"](https://github.com/rbenv/ruby-build/blob/4dac7b1b34479f001b85b8895748170886906c2c/bin/ruby-build#L986-L992).
 
-## Installation
+To force a specific version of openssl, set `RUBY_CONFIGURE_OPTS` like this:
 
-Make sure you have the latest rbenv and ruby-build versions, then run:
-
-```sh
-git clone https://github.com/timblair/rbenv-homebrew-openssl.git ~/.rbenv/plugins/rbenv-homebrew-openssl
+```
+$ export RUBY_CONFIGURE_OPTS=--with-openssl-dir=$(brew --prefix openssl@1.1)
+$ rbenv install 2.5.1
 ```
 
-## Usage
+You might want to set this environment variable in your `~/.bash_profile`.
 
-rbenv-homebrew-openssl will automatically build any Rubies against the Homebrew
-version of OpenSSL and, because it does so via the `CONFIGURE_OPTS` environment
-variable, will also pass along the appropriate `CPPFLAGS` and `LDFLAGS` values
-to any `./configure` invocations, including Gem installations with native
-extensions.
+## Check what openssl version is linked
 
-## Why?
-
-OS X 10.11 (El Capitan) no longer ships with a linkable version of OpenSSL, so
-any built Rubies won't have SSL support compiled in.  The version of OpenSSL
-from Homebrew is keg-only, and while you _can_ force it to link, it's probably
-wise not to.
-
-You can install individial Rubies by specifying where OpenSSL is using the
-`RUBY_CONFIGURE_OPTS` environment variable:
-
-```sh
-RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl)" rbenv install $RB_VERSION
 ```
-
-There are two problems with this:
-
-1. You need to specify every time you need to install a new Ruby.
-2. You also need to specify similar every time you install a gem that needs
-   to link against OpenSSL (e.g. Event Machine or Puma).
-
-You can get around the second issue by instead using the `CONFIGURE_OPTS` var;
-the values from here get written in to `RbConfig` at compile-time, and will
-then be passed on to anything that uses `./configure`, such as gems with native
-elements:
-
-```sh
-CONFIGURE_OPTS="CPPFLAGS=$(brew --prefix openssl)/lib LDFLAGS=$(brew --prefix openssl)/include"
+$ ruby -ropenssl -e 'puts OpenSSL::OPENSSL_VERSION'
+OpenSSL 1.1.0h  27 Mar 2018
 ```
-
-Now we can do that, this plugin is to get around the first issue listed above.
-Install the plugin, and then you don't need to remember the magic incantation
-every time you install a new Ruby.
 
 ## License
 
